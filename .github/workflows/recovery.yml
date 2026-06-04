@@ -1,5 +1,4 @@
 name: RECOVERY
-
 on:
   workflow_dispatch:
     inputs:
@@ -7,31 +6,27 @@ on:
         description: 'RECOVERY URL'
         required: true
         default: 'https://files.catbox.moe/(RECOMMENDED)'
-
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Check Out
       uses: actions/checkout@v4
-
     - name: Prepare the environment
       run: |
         sudo apt install git wget lz4 tar openssl python3 -y
-
     - name: Fetch image from URL
       run: |
         ls
         pwd
-        wget ${{ github.event.inputs.RECOVERY_URL }} -O recovery.img
-
+        wget --user-agent="Mozilla/5.0" --content-disposition "${{ github.event.inputs.RECOVERY_URL }}" -O recovery.img
     - name: Patch Process-1
       run: |
         chmod a+x script1.sh
         chmod a+x magiskboot
         ./script1.sh recovery.img || true
-
     - name: Patch Process-2
       run: |
         chmod a+x script2.sh
@@ -43,7 +38,6 @@ jobs:
         tar cvf fastbootd-recovery.tar recovery.img
         md5sum -t fastbootd-recovery.tar >> fastbootd-recovery.tar
         mv fastbootd-recovery.tar fastbootd-recovery.tar.md5
-
     - name: Upload to Release
       uses: softprops/action-gh-release@v2
       with:
